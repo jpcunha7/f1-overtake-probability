@@ -250,9 +250,7 @@ def create_race_timeline_plot(
     )
 
     # Add threshold line
-    fig.add_hline(
-        y=0.5, line_dash="dash", line_color="red", annotation_text="Threshold (0.5)"
-    )
+    fig.add_hline(y=0.5, line_dash="dash", line_color="red", annotation_text="Threshold (0.5)")
 
     # Highlight actual overtakes
     actual_overtakes = driver_data[driver_data["Overtake"] == 1]

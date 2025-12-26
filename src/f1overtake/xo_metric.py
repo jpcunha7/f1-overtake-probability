@@ -80,16 +80,18 @@ def calculate_xo(
         xo = group["Probability"].sum()
         actual = group["Overtake"].sum()
 
-        xo_results.append({
-            "RaceName": race_name,
-            "Driver": driver,
-            "xO": xo,
-            "ActualOvertakes": int(actual),
-            "Opportunities": n_opportunities,
-            "xO_per_Opportunity": xo / n_opportunities if n_opportunities > 0 else 0,
-            "Actual_per_Opportunity": actual / n_opportunities if n_opportunities > 0 else 0,
-            "Delta": actual - xo,  # Positive means overperformed
-        })
+        xo_results.append(
+            {
+                "RaceName": race_name,
+                "Driver": driver,
+                "xO": xo,
+                "ActualOvertakes": int(actual),
+                "Opportunities": n_opportunities,
+                "xO_per_Opportunity": xo / n_opportunities if n_opportunities > 0 else 0,
+                "Actual_per_Opportunity": actual / n_opportunities if n_opportunities > 0 else 0,
+                "Delta": actual - xo,  # Positive means overperformed
+            }
+        )
 
     xo_df = pd.DataFrame(xo_results)
 
@@ -117,12 +119,18 @@ def create_xo_leaderboard(
         filtered = xo_df[xo_df["RaceName"] == race_name].copy()
     else:
         # Aggregate across all races
-        filtered = xo_df.groupby("Driver").agg({
-            "xO": "sum",
-            "ActualOvertakes": "sum",
-            "Opportunities": "sum",
-            "Delta": "sum",
-        }).reset_index()
+        filtered = (
+            xo_df.groupby("Driver")
+            .agg(
+                {
+                    "xO": "sum",
+                    "ActualOvertakes": "sum",
+                    "Opportunities": "sum",
+                    "Delta": "sum",
+                }
+            )
+            .reset_index()
+        )
 
         # Recalculate per-opportunity metrics
         filtered["xO_per_Opportunity"] = filtered["xO"] / filtered["Opportunities"]
@@ -154,12 +162,18 @@ def visualize_xo_analysis(
         title = f"xO Analysis - {race_name}"
     else:
         # Aggregate by driver
-        data = xo_df.groupby("Driver").agg({
-            "xO": "sum",
-            "ActualOvertakes": "sum",
-            "Opportunities": "sum",
-            "Delta": "sum",
-        }).reset_index()
+        data = (
+            xo_df.groupby("Driver")
+            .agg(
+                {
+                    "xO": "sum",
+                    "ActualOvertakes": "sum",
+                    "Opportunities": "sum",
+                    "Delta": "sum",
+                }
+            )
+            .reset_index()
+        )
         title = "xO Analysis - All Races"
 
     # Sort by Delta
@@ -167,7 +181,8 @@ def visualize_xo_analysis(
 
     # Create figure
     fig = make_subplots(
-        rows=1, cols=2,
+        rows=1,
+        cols=2,
         subplot_titles=("Expected vs Actual Overtakes", "Performance Delta"),
         specs=[[{"type": "scatter"}, {"type": "bar"}]],
         horizontal_spacing=0.15,
@@ -190,7 +205,8 @@ def visualize_xo_analysis(
             ),
             name="Drivers",
         ),
-        row=1, col=1,
+        row=1,
+        col=1,
     )
 
     # Add diagonal line (perfect calibration)
@@ -204,7 +220,8 @@ def visualize_xo_analysis(
             name="Perfect Calibration",
             showlegend=True,
         ),
-        row=1, col=1,
+        row=1,
+        col=1,
     )
 
     # Right plot: Delta bar chart
@@ -217,7 +234,8 @@ def visualize_xo_analysis(
             marker=dict(color=colors),
             name="Delta",
         ),
-        row=1, col=2,
+        row=1,
+        col=2,
     )
 
     # Update layout

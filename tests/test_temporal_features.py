@@ -16,15 +16,17 @@ def sample_opportunities():
     """Create sample overtake opportunities with sequential laps."""
     data = []
     for lap in range(1, 11):
-        data.append({
-            "RaceName": "Bahrain",
-            "LapNumber": lap,
-            "Driver": "VER",
-            "DriverAhead": "PER",
-            "Gap": 2.0 - (lap * 0.1),  # Gap closing over time
-            "RelativePace": 0.5,
-            "Position": 2,
-        })
+        data.append(
+            {
+                "RaceName": "Bahrain",
+                "LapNumber": lap,
+                "Driver": "VER",
+                "DriverAhead": "PER",
+                "Gap": 2.0 - (lap * 0.1),  # Gap closing over time
+                "RelativePace": 0.5,
+                "Position": 2,
+            }
+        )
 
     return pd.DataFrame(data)
 
@@ -34,18 +36,22 @@ def sample_lap_data():
     """Create sample lap data."""
     data = []
     for lap in range(1, 11):
-        data.append({
-            "RaceName": "Bahrain",
-            "LapNumber": lap,
-            "Driver": "VER",
-            "LapTimeSeconds": 90.0 + np.random.uniform(-1, 1),
-        })
-        data.append({
-            "RaceName": "Bahrain",
-            "LapNumber": lap,
-            "Driver": "PER",
-            "LapTimeSeconds": 90.5 + np.random.uniform(-1, 1),
-        })
+        data.append(
+            {
+                "RaceName": "Bahrain",
+                "LapNumber": lap,
+                "Driver": "VER",
+                "LapTimeSeconds": 90.0 + np.random.uniform(-1, 1),
+            }
+        )
+        data.append(
+            {
+                "RaceName": "Bahrain",
+                "LapNumber": lap,
+                "Driver": "PER",
+                "LapTimeSeconds": 90.5 + np.random.uniform(-1, 1),
+            }
+        )
 
     return pd.DataFrame(data)
 
@@ -58,9 +64,7 @@ def test_add_temporal_features_basic(sample_opportunities, sample_lap_data):
         closing_rate_window=3,
     )
 
-    result = _add_temporal_features(
-        sample_opportunities.copy(), sample_lap_data, config
-    )
+    result = _add_temporal_features(sample_opportunities.copy(), sample_lap_data, config)
 
     # Should have lagged gap columns
     assert "Gap_L1" in result.columns
@@ -81,9 +85,7 @@ def test_lagged_gap_values(sample_opportunities, sample_lap_data):
         closing_rate_window=3,
     )
 
-    result = _add_temporal_features(
-        sample_opportunities.copy(), sample_lap_data, config
-    )
+    result = _add_temporal_features(sample_opportunities.copy(), sample_lap_data, config)
 
     # For lap 3, Gap_L1 should be the gap from lap 2
     lap_3 = result[result["LapNumber"] == 3].iloc[0]
@@ -101,9 +103,7 @@ def test_closing_rate_calculation(sample_opportunities, sample_lap_data):
         closing_rate_window=3,
     )
 
-    result = _add_temporal_features(
-        sample_opportunities.copy(), sample_lap_data, config
-    )
+    result = _add_temporal_features(sample_opportunities.copy(), sample_lap_data, config)
 
     # Closing rate should be (old_gap - current_gap) / lag
     # Since gap is decreasing, closing rate should be positive
@@ -122,9 +122,7 @@ def test_missing_lags_at_start(sample_opportunities, sample_lap_data):
         closing_rate_window=3,
     )
 
-    result = _add_temporal_features(
-        sample_opportunities.copy(), sample_lap_data, config
-    )
+    result = _add_temporal_features(sample_opportunities.copy(), sample_lap_data, config)
 
     # Lap 1 should have NaN for Gap_L1 (no previous lap)
     lap_1 = result[result["LapNumber"] == 1].iloc[0]
@@ -144,13 +142,15 @@ def test_temporal_features_with_no_lags():
         closing_rate_window=3,
     )
 
-    df = pd.DataFrame({
-        "RaceName": ["Bahrain"],
-        "LapNumber": [5],
-        "Driver": ["VER"],
-        "DriverAhead": ["PER"],
-        "Gap": [1.5],
-    })
+    df = pd.DataFrame(
+        {
+            "RaceName": ["Bahrain"],
+            "LapNumber": [5],
+            "Driver": ["VER"],
+            "DriverAhead": ["PER"],
+            "Gap": [1.5],
+        }
+    )
 
     lap_data = pd.DataFrame()
 

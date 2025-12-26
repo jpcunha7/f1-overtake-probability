@@ -76,21 +76,23 @@ def test_tune_xgboost_basic():
     np.random.seed(42)
     n_samples = 200
 
-    train_df = pd.DataFrame({
-        "RaceName": ["Race1"] * 100 + ["Race2"] * 100,
-        "Driver": ["VER"] * n_samples,
-        "DriverAhead": ["PER"] * n_samples,
-        "Gap": np.random.uniform(0.5, 2.5, n_samples),
-        "RelativePace": np.random.uniform(-0.5, 0.5, n_samples),
-        "PaceRatio": np.random.uniform(0.95, 1.05, n_samples),
-        "TyreLife": np.random.randint(1, 20, n_samples),
-        "AheadTyreLife": np.random.randint(1, 20, n_samples),
-        "TireAgeDiff": np.random.randint(-10, 10, n_samples),
-        "CompoundAdvantage": np.random.randint(-1, 2, n_samples),
-        "RaceProgress": np.random.uniform(0.2, 0.8, n_samples),
-        "Position": np.random.randint(3, 15, n_samples),
-        "Overtake": np.random.randint(0, 2, n_samples),
-    })
+    train_df = pd.DataFrame(
+        {
+            "RaceName": ["Race1"] * 100 + ["Race2"] * 100,
+            "Driver": ["VER"] * n_samples,
+            "DriverAhead": ["PER"] * n_samples,
+            "Gap": np.random.uniform(0.5, 2.5, n_samples),
+            "RelativePace": np.random.uniform(-0.5, 0.5, n_samples),
+            "PaceRatio": np.random.uniform(0.95, 1.05, n_samples),
+            "TyreLife": np.random.randint(1, 20, n_samples),
+            "AheadTyreLife": np.random.randint(1, 20, n_samples),
+            "TireAgeDiff": np.random.randint(-10, 10, n_samples),
+            "CompoundAdvantage": np.random.randint(-1, 2, n_samples),
+            "RaceProgress": np.random.uniform(0.2, 0.8, n_samples),
+            "Position": np.random.randint(3, 15, n_samples),
+            "Overtake": np.random.randint(0, 2, n_samples),
+        }
+    )
 
     # Quick config for testing
     config = Config()

@@ -75,11 +75,7 @@ def prepare_xy(
     if feature_cols is None:
         # Auto-detect: all columns except target and metadata
         metadata_cols = ["RaceName", "Driver", "DriverAhead", "LapNumber"]
-        feature_cols = [
-            col
-            for col in df.columns
-            if col not in [target_col] + metadata_cols
-        ]
+        feature_cols = [col for col in df.columns if col not in [target_col] + metadata_cols]
 
     X = df[feature_cols].copy()
     y = df[target_col].copy()

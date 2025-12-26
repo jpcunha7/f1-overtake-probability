@@ -86,8 +86,12 @@ def train_xgboost(
             "max_depth": best_params.get("max_depth", config.model.xgb_max_depth),
             "learning_rate": best_params.get("learning_rate", config.model.xgb_learning_rate),
             "subsample": best_params.get("subsample", config.model.xgb_subsample),
-            "colsample_bytree": best_params.get("colsample_bytree", config.model.xgb_colsample_bytree),
-            "min_child_weight": best_params.get("min_child_weight", config.model.xgb_min_child_weight),
+            "colsample_bytree": best_params.get(
+                "colsample_bytree", config.model.xgb_colsample_bytree
+            ),
+            "min_child_weight": best_params.get(
+                "min_child_weight", config.model.xgb_min_child_weight
+            ),
             "gamma": best_params.get("gamma", config.model.xgb_gamma),
         }
     else:
@@ -262,12 +266,8 @@ if __name__ == "__main__":
     )
 
     parser = argparse.ArgumentParser(description="Train overtake prediction models")
-    parser.add_argument(
-        "--quick", action="store_true", help="Use quick mode (fewer races)"
-    )
-    parser.add_argument(
-        "--tune", action="store_true", help="Use Optuna hyperparameter tuning"
-    )
+    parser.add_argument("--quick", action="store_true", help="Use quick mode (fewer races)")
+    parser.add_argument("--tune", action="store_true", help="Use Optuna hyperparameter tuning")
 
     args = parser.parse_args()
 

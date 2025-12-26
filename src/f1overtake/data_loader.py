@@ -84,9 +84,7 @@ def extract_lap_data(session) -> pd.DataFrame:
     return lap_data
 
 
-def load_multiple_races(
-    year: int, race_names: List[str], cache_dir: str = "cache"
-) -> pd.DataFrame:
+def load_multiple_races(year: int, race_names: List[str], cache_dir: str = "cache") -> pd.DataFrame:
     """Load multiple races and combine into single DataFrame.
 
     Args:
@@ -132,9 +130,7 @@ def get_driver_positions_by_lap(lap_data: pd.DataFrame) -> Dict[int, Dict[str, i
     positions = {}
 
     for lap_num in lap_data["LapNumber"].unique():
-        lap_positions = lap_data[lap_data["LapNumber"] == lap_num][
-            ["Driver", "Position"]
-        ].dropna()
+        lap_positions = lap_data[lap_data["LapNumber"] == lap_num][["Driver", "Position"]].dropna()
 
         positions[lap_num] = dict(zip(lap_positions["Driver"], lap_positions["Position"]))
 

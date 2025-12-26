@@ -91,9 +91,7 @@ def train_command(args):
         for model_name, model in models.items():
             if "calibrated" not in model_name:
                 report_path = outputs_dir / f"{model_name}_report.html"
-                generate_html_report(
-                    model, model_name, train_df, test_df, cfg, str(report_path)
-                )
+                generate_html_report(model, model_name, train_df, test_df, cfg, str(report_path))
 
     logger.info("Training complete!")
 
@@ -144,9 +142,7 @@ def evaluate_command(args):
         for model_name, model in models.items():
             if "calibrated" not in model_name:
                 report_path = outputs_dir / f"{model_name}_report.html"
-                generate_html_report(
-                    model, model_name, train_df, test_df, cfg, str(report_path)
-                )
+                generate_html_report(model, model_name, train_df, test_df, cfg, str(report_path))
 
 
 def score_race_command(args):
@@ -181,9 +177,7 @@ def score_race_command(args):
     dataset = build_dataset(cfg)
 
     # Filter to specific race
-    race_df = dataset[
-        (dataset["RaceName"].str.contains(args.event, case=False))
-    ].copy()
+    race_df = dataset[(dataset["RaceName"].str.contains(args.event, case=False))].copy()
 
     if len(race_df) == 0:
         logger.error(f"No data found for race: {args.event}")
@@ -256,17 +250,13 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable verbose logging"
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
 
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
     # Train command
     train_parser = subparsers.add_parser("train", help="Train models")
-    train_parser.add_argument(
-        "--quick", action="store_true", help="Use quick mode (fewer races)"
-    )
+    train_parser.add_argument("--quick", action="store_true", help="Use quick mode (fewer races)")
     train_parser.add_argument(
         "--tune", action="store_true", help="Use Optuna hyperparameter tuning"
     )
@@ -279,33 +269,21 @@ def main():
 
     # Evaluate command
     eval_parser = subparsers.add_parser("evaluate", help="Evaluate models")
-    eval_parser.add_argument(
-        "--quick", action="store_true", help="Use quick mode (fewer races)"
-    )
-    eval_parser.add_argument(
-        "--report", action="store_true", help="Generate HTML reports"
-    )
+    eval_parser.add_argument("--quick", action="store_true", help="Use quick mode (fewer races)")
+    eval_parser.add_argument("--report", action="store_true", help="Generate HTML reports")
 
     # Score race command
     score_parser = subparsers.add_parser("score-race", help="Score a specific race")
-    score_parser.add_argument(
-        "--year", type=int, default=2024, help="Year of the race"
-    )
+    score_parser.add_argument("--year", type=int, default=2024, help="Year of the race")
     score_parser.add_argument(
         "--event", type=str, required=True, help="Event name (e.g., 'Bahrain')"
     )
-    score_parser.add_argument(
-        "--driver", type=str, help="Driver code (e.g., 'VER')"
-    )
+    score_parser.add_argument("--driver", type=str, help="Driver code (e.g., 'VER')")
     score_parser.add_argument(
         "--model", type=str, help="Model to use (default: xgboost_calibrated)"
     )
-    score_parser.add_argument(
-        "--output", type=str, help="Output directory for results"
-    )
-    score_parser.add_argument(
-        "--quick", action="store_true", help="Use quick mode (fewer races)"
-    )
+    score_parser.add_argument("--output", type=str, help="Output directory for results")
+    score_parser.add_argument("--quick", action="store_true", help="Use quick mode (fewer races)")
 
     args = parser.parse_args()
 

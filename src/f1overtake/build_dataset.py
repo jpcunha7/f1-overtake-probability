@@ -102,12 +102,8 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Build overtake prediction dataset")
-    parser.add_argument(
-        "--quick", action="store_true", help="Use quick mode (fewer races)"
-    )
-    parser.add_argument(
-        "--force", action="store_true", help="Force rebuild even if cached"
-    )
+    parser.add_argument("--quick", action="store_true", help="Use quick mode (fewer races)")
+    parser.add_argument("--force", action="store_true", help="Force rebuild even if cached")
 
     args = parser.parse_args()
 

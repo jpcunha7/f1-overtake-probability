@@ -15,21 +15,23 @@ from f1overtake.xo_metric import calculate_xo, create_xo_leaderboard
 @pytest.fixture
 def sample_df():
     """Create sample overtake opportunities DataFrame."""
-    return pd.DataFrame({
-        "RaceName": ["Bahrain"] * 20,
-        "Driver": ["VER"] * 10 + ["HAM"] * 10,
-        "DriverAhead": ["PER"] * 10 + ["RUS"] * 10,
-        "Gap": np.random.uniform(0.5, 2.5, 20),
-        "RelativePace": np.random.uniform(-0.5, 0.5, 20),
-        "PaceRatio": np.random.uniform(0.95, 1.05, 20),
-        "TyreLife": np.random.randint(1, 20, 20),
-        "AheadTyreLife": np.random.randint(1, 20, 20),
-        "TireAgeDiff": np.random.randint(-10, 10, 20),
-        "CompoundAdvantage": np.random.randint(-1, 2, 20),
-        "RaceProgress": np.random.uniform(0.2, 0.8, 20),
-        "Position": np.random.randint(3, 15, 20),
-        "Overtake": [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0],
-    })
+    return pd.DataFrame(
+        {
+            "RaceName": ["Bahrain"] * 20,
+            "Driver": ["VER"] * 10 + ["HAM"] * 10,
+            "DriverAhead": ["PER"] * 10 + ["RUS"] * 10,
+            "Gap": np.random.uniform(0.5, 2.5, 20),
+            "RelativePace": np.random.uniform(-0.5, 0.5, 20),
+            "PaceRatio": np.random.uniform(0.95, 1.05, 20),
+            "TyreLife": np.random.randint(1, 20, 20),
+            "AheadTyreLife": np.random.randint(1, 20, 20),
+            "TireAgeDiff": np.random.randint(-10, 10, 20),
+            "CompoundAdvantage": np.random.randint(-1, 2, 20),
+            "RaceProgress": np.random.uniform(0.2, 0.8, 20),
+            "Position": np.random.randint(3, 15, 20),
+            "Overtake": [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0],
+        }
+    )
 
 
 @pytest.fixture
@@ -59,9 +61,7 @@ def test_calculate_xo(sample_df, simple_model):
     assert (xo_df["xO"] >= 0).all()
 
     # Delta should be actual - xO
-    assert np.allclose(
-        xo_df["Delta"], xo_df["ActualOvertakes"] - xo_df["xO"]
-    )
+    assert np.allclose(xo_df["Delta"], xo_df["ActualOvertakes"] - xo_df["xO"])
 
 
 def test_calculate_xo_empty_df():
@@ -113,7 +113,4 @@ def test_xo_per_opportunity(sample_df, simple_model):
         assert (xo_df["xO_per_Opportunity"] <= 1).all()
 
         # Should equal xO / Opportunities
-        assert np.allclose(
-            xo_df["xO_per_Opportunity"],
-            xo_df["xO"] / xo_df["Opportunities"]
-        )
+        assert np.allclose(xo_df["xO_per_Opportunity"], xo_df["xO"] / xo_df["Opportunities"])

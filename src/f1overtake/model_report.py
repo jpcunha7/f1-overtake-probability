@@ -79,7 +79,8 @@ def create_pr_roc_curves(
         HTML string with plots
     """
     fig = make_subplots(
-        rows=1, cols=2,
+        rows=1,
+        cols=2,
         subplot_titles=("Precision-Recall Curve", "ROC Curve"),
         specs=[[{"type": "scatter"}, {"type": "scatter"}]],
     )
@@ -96,7 +97,8 @@ def create_pr_roc_curves(
             name=f"PR AUC = {pr_auc:.3f}",
             line=dict(color="blue", width=2),
         ),
-        row=1, col=1,
+        row=1,
+        col=1,
     )
 
     # Baseline
@@ -109,7 +111,8 @@ def create_pr_roc_curves(
             name=f"Baseline = {baseline:.3f}",
             line=dict(color="gray", dash="dash"),
         ),
-        row=1, col=1,
+        row=1,
+        col=1,
     )
 
     # ROC Curve
@@ -124,7 +127,8 @@ def create_pr_roc_curves(
             name=f"ROC AUC = {roc_auc:.3f}",
             line=dict(color="green", width=2),
         ),
-        row=1, col=2,
+        row=1,
+        col=2,
     )
 
     # Diagonal
@@ -136,7 +140,8 @@ def create_pr_roc_curves(
             name="Random",
             line=dict(color="gray", dash="dash"),
         ),
-        row=1, col=2,
+        row=1,
+        col=2,
     )
 
     fig.update_xaxes(title_text="Recall", row=1, col=1)
@@ -347,7 +352,9 @@ def generate_html_report(
     # Create visualizations
     pr_roc_html = create_pr_roc_curves(y_test, y_pred_proba, model_name)
     calibration_html = create_calibration_plot_html(y_test, y_pred_proba, config.eval.n_bins)
-    importance_html = create_feature_importance_html(importance_df) if not importance_df.empty else ""
+    importance_html = (
+        create_feature_importance_html(importance_df) if not importance_df.empty else ""
+    )
 
     # Build HTML
     html = f"""

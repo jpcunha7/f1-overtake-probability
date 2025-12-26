@@ -97,9 +97,7 @@ def create_overtake_labels(
                     # Check if either driver pits in current or lookahead window
                     if _check_pit_activity(
                         race_df, driver, lap_num, config.lookahead_laps
-                    ) or _check_pit_activity(
-                        race_df, ahead_driver, lap_num, config.lookahead_laps
-                    ):
+                    ) or _check_pit_activity(race_df, ahead_driver, lap_num, config.lookahead_laps):
                         continue
 
                 # Check for outlier lap times
@@ -153,9 +151,7 @@ def create_overtake_labels(
     return result
 
 
-def _check_pit_activity(
-    race_df: pd.DataFrame, driver: str, start_lap: int, lookahead: int
-) -> bool:
+def _check_pit_activity(race_df: pd.DataFrame, driver: str, start_lap: int, lookahead: int) -> bool:
     """Check if driver pits within a lap window.
 
     Improved pit detection using multiple signals:
@@ -348,12 +344,14 @@ def label_sensitivity_analysis(
         opportunities = create_overtake_labels(lap_data, config_copy)
 
         if len(opportunities) > 0:
-            results.append({
-                "lookahead": lookahead,
-                "total_opportunities": len(opportunities),
-                "overtakes": int(opportunities["Overtake"].sum()),
-                "overtake_rate": opportunities["Overtake"].mean(),
-            })
+            results.append(
+                {
+                    "lookahead": lookahead,
+                    "total_opportunities": len(opportunities),
+                    "overtakes": int(opportunities["Overtake"].sum()),
+                    "overtake_rate": opportunities["Overtake"].mean(),
+                }
+            )
 
     results_df = pd.DataFrame(results)
 

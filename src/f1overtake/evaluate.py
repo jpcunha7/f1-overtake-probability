@@ -24,9 +24,7 @@ from f1overtake.split import prepare_xy
 logger = logging.getLogger(__name__)
 
 
-def evaluate_model(
-    model, test_df: pd.DataFrame, threshold: float = 0.5
-) -> Dict[str, float]:
+def evaluate_model(model, test_df: pd.DataFrame, threshold: float = 0.5) -> Dict[str, float]:
     """Evaluate model on test set.
 
     Args:
@@ -172,8 +170,8 @@ def get_feature_importance(model, top_n: int = 10) -> pd.DataFrame:
     if feature_names is None:
         feature_names = [f"feature_{i}" for i in range(len(importances))]
 
-    importance_df = pd.DataFrame(
-        {"feature": feature_names, "importance": importances}
-    ).sort_values("importance", ascending=False)
+    importance_df = pd.DataFrame({"feature": feature_names, "importance": importances}).sort_values(
+        "importance", ascending=False
+    )
 
     return importance_df.head(top_n)

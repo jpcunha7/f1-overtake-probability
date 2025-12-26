@@ -75,13 +75,12 @@ def _add_gap_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _add_pace_features(
-    df: pd.DataFrame, lap_data: pd.DataFrame, window: int
-) -> pd.DataFrame:
+def _add_pace_features(df: pd.DataFrame, lap_data: pd.DataFrame, window: int) -> pd.DataFrame:
     """Add pace-related features.
 
     Calculates rolling average lap times and relative pace.
     """
+
     # Create a helper function to get recent pace
     def get_recent_pace(race_name, driver, lap_num, window):
         """Get average lap time over recent laps."""
@@ -104,9 +103,7 @@ def _add_pace_features(
     )
 
     df["AheadRecentPace"] = df.apply(
-        lambda row: get_recent_pace(
-            row["RaceName"], row["DriverAhead"], row["LapNumber"], window
-        ),
+        lambda row: get_recent_pace(row["RaceName"], row["DriverAhead"], row["LapNumber"], window),
         axis=1,
     )
 
@@ -263,17 +260,24 @@ def _add_temporal_features(
 
         if len(historical) > 0 and "RelativePace" in historical.columns:
             past_pace = historical.iloc[0]["RelativePace"]
-            current_pace = df[
-                (df["RaceName"] == race_name)
-                & (df["Driver"] == driver)
-                & (df["DriverAhead"] == driver_ahead)
-                & (df["LapNumber"] == lap_num)
-            ]["RelativePace"].iloc[0] if len(df[
-                (df["RaceName"] == race_name)
-                & (df["Driver"] == driver)
-                & (df["DriverAhead"] == driver_ahead)
-                & (df["LapNumber"] == lap_num)
-            ]) > 0 else None
+            current_pace = (
+                df[
+                    (df["RaceName"] == race_name)
+                    & (df["Driver"] == driver)
+                    & (df["DriverAhead"] == driver_ahead)
+                    & (df["LapNumber"] == lap_num)
+                ]["RelativePace"].iloc[0]
+                if len(
+                    df[
+                        (df["RaceName"] == race_name)
+                        & (df["Driver"] == driver)
+                        & (df["DriverAhead"] == driver_ahead)
+                        & (df["LapNumber"] == lap_num)
+                    ]
+                )
+                > 0
+                else None
+            )
 
             if past_pace is not None and current_pace is not None:
                 return current_pace - past_pace
@@ -285,7 +289,7 @@ def _add_temporal_features(
             row["Driver"],
             row["DriverAhead"],
             row["LapNumber"],
-            config.closing_rate_window
+            config.closing_rate_window,
         ),
         axis=1,
     )

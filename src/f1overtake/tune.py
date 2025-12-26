@@ -249,20 +249,15 @@ if __name__ == "__main__":
     from f1overtake.split import split_by_race
 
     parser = argparse.ArgumentParser(description="Tune XGBoost hyperparameters with Optuna")
+    parser.add_argument("--quick", action="store_true", help="Use quick mode (fewer races)")
+    parser.add_argument("--n-trials", type=int, default=50, help="Number of Optuna trials")
+    parser.add_argument("--cv-folds", type=int, default=5, help="Number of CV folds")
+    parser.add_argument("--timeout", type=int, default=3600, help="Timeout in seconds")
     parser.add_argument(
-        "--quick", action="store_true", help="Use quick mode (fewer races)"
-    )
-    parser.add_argument(
-        "--n-trials", type=int, default=50, help="Number of Optuna trials"
-    )
-    parser.add_argument(
-        "--cv-folds", type=int, default=5, help="Number of CV folds"
-    )
-    parser.add_argument(
-        "--timeout", type=int, default=3600, help="Timeout in seconds"
-    )
-    parser.add_argument(
-        "--output", type=str, default="models/best_params.json", help="Output path for best parameters"
+        "--output",
+        type=str,
+        default="models/best_params.json",
+        help="Output path for best parameters",
     )
 
     args = parser.parse_args()
