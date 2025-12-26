@@ -148,7 +148,7 @@ def main():
             test_df = st.session_state["test_df"]
 
             # Model selection
-            model_name = st.selectbox("Select Model", list(models.keys()))
+            model_name = st.selectbox("Select Model", list(models.keys()), key="eval_model")
             model = models[model_name]
 
             # Evaluation metrics
@@ -241,11 +241,11 @@ def main():
                 test_df = st.session_state["test_df"]
 
                 available_races = test_df["RaceName"].unique()
-                selected_race = st.selectbox("Select Race", available_races)
+                selected_race = st.selectbox("Select Race", available_races, key="timeline_race")
 
                 race_df = test_df[test_df["RaceName"] == selected_race]
                 available_drivers = race_df["Driver"].unique()
-                selected_driver = st.selectbox("Select Driver", available_drivers)
+                selected_driver = st.selectbox("Select Driver", available_drivers, key="timeline_driver")
 
                 timeline_fig = create_race_timeline_plot(race_df, selected_driver, model)
                 st.plotly_chart(timeline_fig, use_container_width=True)
@@ -291,7 +291,7 @@ def main():
 
                 if race_option == "Single Race":
                     available_races = test_df["RaceName"].unique()
-                    selected_race = st.selectbox("Select Race", available_races)
+                    selected_race = st.selectbox("Select Race", available_races, key="xo_race")
                     race_filter = selected_race
                 else:
                     race_filter = None
