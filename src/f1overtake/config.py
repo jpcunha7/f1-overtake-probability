@@ -78,6 +78,10 @@ class LabelConfig:
     exclude_outliers: bool = True
     outlier_threshold: float = 3.0  # std devs from median
 
+    # Exclude safety car laps
+    exclude_safety_car: bool = True
+    safety_car_threshold_pct: float = 0.15  # % of drivers with slow laps
+
     # Minimum stint length to consider
     min_stint_length: int = 3
 
@@ -88,6 +92,11 @@ class FeatureConfig:
 
     # Rolling window sizes for pace calculations
     pace_window: int = 3
+
+    # Temporal features
+    enable_temporal_features: bool = True
+    lagged_gap_laps: List[int] = field(default_factory=lambda: [1, 2])  # Look back 1 and 2 laps
+    closing_rate_window: int = 3  # Window for calculating closing rate
 
     # Normalize features
     normalize: bool = True
@@ -109,15 +118,28 @@ class ModelConfig:
     xgb_max_depth: int = 5
     xgb_learning_rate: float = 0.1
     xgb_subsample: float = 0.8
+    xgb_min_child_weight: int = 1
+    xgb_gamma: float = 0.0
+    xgb_colsample_bytree: float = 1.0
 
     # Class imbalance handling
     use_class_weights: bool = True
+
+    # Optuna hyperparameter tuning
+    use_optuna: bool = False
+    optuna_n_trials: int = 50
+    optuna_cv_folds: int = 5
+    optuna_timeout: int = 3600  # 1 hour timeout
 
     # Calibration method
     calibration_method: str = "isotonic"  # or 'sigmoid'
 
     # Test split
     test_size: float = 0.3  # 30% of races for testing
+
+    # Performance targets
+    target_roc_auc: float = 0.75
+    target_pr_auc_multiplier: float = 2.0  # 2x baseline
 
 
 @dataclass
@@ -130,6 +152,21 @@ class EvalConfig:
     # Generate calibration curves
     n_bins: int = 10
 
+    # Model report generation
+    generate_html_report: bool = True
+    report_n_examples: int = 10  # Number of example predictions to show
+
+
+@dataclass
+class XOConfig:
+    """Expected Overtakes (xO) metric configuration."""
+
+    # Minimum number of overtake opportunities to calculate xO
+    min_opportunities: int = 5
+
+    # Include calibration caveat in outputs
+    show_calibration_warning: bool = True
+
 
 @dataclass
 class Config:
@@ -140,6 +177,7 @@ class Config:
     features: FeatureConfig = field(default_factory=FeatureConfig)
     model: ModelConfig = field(default_factory=ModelConfig)
     eval: EvalConfig = field(default_factory=EvalConfig)
+    xo: XOConfig = field(default_factory=XOConfig)
 
     def __post_init__(self):
         """Validate configuration."""

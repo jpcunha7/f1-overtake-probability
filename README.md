@@ -17,11 +17,11 @@ This project uses supervised machine learning to predict the probability of an o
 - **Track context** (circuit characteristics)
 
 **Key Features:**
-- 🎯 **Supervised ML Pipeline**: Logistic Regression + XGBoost models
-- 📊 **Calibrated Probabilities**: Isotonic/Platt calibration for reliable predictions
-- 🔍 **Explainability**: Feature importance analysis
-- 📈 **Interactive App**: Streamlit dashboard for scenario exploration
-- ✅ **Robust Evaluation**: ROC AUC, PR AUC, Brier score, calibration curves
+- **Supervised ML Pipeline**: Logistic Regression + XGBoost models
+- **Calibrated Probabilities**: Isotonic/Platt calibration for reliable predictions
+- **Explainability**: Feature importance analysis
+- **Interactive App**: Streamlit dashboard for scenario exploration
+- **Robust Evaluation**: ROC AUC, PR AUC, Brier score, calibration curves
 
 **100% Free**: Uses only open-source tools and FastF1 data.
 
@@ -36,7 +36,7 @@ This project uses supervised machine learning to predict the probability of an o
 ### Using Poetry
 
 ```bash
-git clone https://github.com/yourusername/f1-overtake-probability.git
+git clone https://github.com/jpcunha7/f1-overtake-probability.git
 cd f1-overtake-probability
 poetry install
 poetry shell
@@ -89,10 +89,10 @@ An overtake opportunity exists when:
 
 Pit stops create artificial position changes. We filter these using:
 
-✅ **Exclude laps where either driver pits** in current lap or lookahead window
-✅ **Exclude laps with compound changes** (indicates pit stop)
-✅ **Exclude outlier lap times** (formation laps, safety cars)
-✅ **Minimum stint length requirement** (ensures clean data)
+- **Exclude laps where either driver pits** in current lap or lookahead window
+- **Exclude laps with compound changes** (indicates pit stop)
+- **Exclude outlier lap times** (formation laps, safety cars)
+- **Minimum stint length requirement** (ensures clean data)
 
 ### 2. Feature Engineering
 
@@ -166,34 +166,36 @@ Raw model probabilities may not reflect true frequencies. For example:
 
 ## Modeling Assumptions & Limitations
 
-### What We Model ✅
+### What We Model
 
-✅ Tire degradation differences
-✅ Gap and relative pace
-✅ Pit stop filtering (heuristic-based)
-✅ Probability calibration
-✅ Race phase effects
+- Tire degradation differences
+- Gap and relative pace
+- Pit stop filtering (heuristic-based)
+- Probability calibration
+- Race phase effects
 
-### What We DON'T Model ❌
+### What We DON'T Model
 
-❌ **DRS (Drag Reduction System)**: Major overtaking aid not explicitly modeled
-❌ **Track-specific characteristics**: Overtaking difficulty varies by circuit
-❌ **Traffic and backmarkers**: Multi-car interactions ignored
-❌ **Weather conditions**: Rain/wet races not handled
-❌ **Safety cars and VSC**: Some SC periods may leak through filtering
-❌ **Driver skill differences**: Assumes all drivers equal
-❌ **Incident-based position changes**: Crashes, mechanical failures
-❌ **Perfect pit detection**: Label noise exists despite filtering
+- **DRS (Drag Reduction System)**: Major overtaking aid not explicitly modeled
+- **Track-specific characteristics**: Overtaking difficulty varies by circuit
+- **Traffic and backmarkers**: Multi-car interactions ignored
+- **Weather conditions**: Rain/wet races not handled
+- **Safety cars and VSC**: Some SC periods may leak through filtering
+- **Driver skill differences**: Assumes all drivers equal
+- **Incident-based position changes**: Crashes, mechanical failures
+- **Perfect pit detection**: Label noise exists despite filtering
 
 ### Interpretation Guidelines
 
-✅ **Do:** Use for comparative analysis ("How do gap and tire age affect overtake probability?")
-✅ **Do:** Explore scenario sensitivity (what-if analysis)
-✅ **Do:** Understand model limitations and uncertainty
+**Do:**
+- Use for comparative analysis ("How do gap and tire age affect overtake probability?")
+- Explore scenario sensitivity (what-if analysis)
+- Understand model limitations and uncertainty
 
-❌ **Don't:** Treat predictions as absolute truth
-❌ **Don't:** Ignore label noise and confounding factors
-❌ **Don't:** Use for betting or real-time race strategy (insufficient real-time data)
+**Don't:**
+- Treat predictions as absolute truth
+- Ignore label noise and confounding factors
+- Use for betting or real-time race strategy (insufficient real-time data)
 
 **Transparency:** This is a **proxy model** with **label noise**. Position changes ≠ on-track overtakes.
 
@@ -366,9 +368,5 @@ If you use this tool in research or presentations:
 
 ```
 Cunha, J.P. (2025). F1 Overtake Probability Model: Supervised ML for Overtaking Prediction.
-https://github.com/yourusername/f1-overtake-probability
+https://github.com/jpcunha7/f1-overtake-probability
 ```
-
----
-
-**Built with Claude Code** | Data powered by FastF1

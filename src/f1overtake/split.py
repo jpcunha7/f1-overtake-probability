@@ -10,11 +10,9 @@ This ensures the model is tested on completely unseen races.
 import logging
 from typing import Tuple
 
-import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from f1overtake.config import ModelConfig
 
 logger = logging.getLogger(__name__)
 

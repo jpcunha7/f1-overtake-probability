@@ -20,6 +20,7 @@ pyarrow = "^12.0.0"
 pyyaml = "^6.0"
 tqdm = "^4.65.0"
 matplotlib = "^3.7.0"
+optuna = "^3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

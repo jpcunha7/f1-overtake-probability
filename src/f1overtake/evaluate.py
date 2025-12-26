@@ -17,7 +17,6 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     roc_auc_score,
-    roc_curve,
 )
 
 from f1overtake.split import prepare_xy

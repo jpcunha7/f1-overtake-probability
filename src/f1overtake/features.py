@@ -8,6 +8,7 @@ FEATURE CATEGORIES:
 3. Tire features: Tire age, compound differences
 4. Track features: Track-specific encoding
 5. Race phase features: Lap number, race progress
+6. Temporal features: Lagged gaps, closing rates, rolling pace deltas
 """
 
 import logging
@@ -51,6 +52,10 @@ def engineer_features(
 
     # 5. Race phase features
     df = _add_race_phase_features(df)
+
+    # 6. Temporal features
+    if config.enable_temporal_features:
+        df = _add_temporal_features(df, lap_data, config)
 
     logger.info(f"Engineered {len(df.columns)} features")
 
@@ -186,6 +191,109 @@ def _add_race_phase_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _add_temporal_features(
+    df: pd.DataFrame, lap_data: pd.DataFrame, config: FeatureConfig
+) -> pd.DataFrame:
+    """Add temporal features (lagged gaps, closing rates, rolling pace deltas).
+
+    Args:
+        df: DataFrame with opportunities
+        lap_data: Full lap data
+        config: Feature configuration
+
+    Returns:
+        DataFrame with added temporal features
+    """
+    logger.info("Adding temporal features...")
+
+    # Create a helper to get historical gap values
+    def get_lagged_gap(race_name, driver, driver_ahead, lap_num, lag):
+        """Get gap from L-lag laps ago."""
+        target_lap = lap_num - lag
+        if target_lap < 1:
+            return None
+
+        # Find the same driver pair at the earlier lap
+        historical = df[
+            (df["RaceName"] == race_name)
+            & (df["Driver"] == driver)
+            & (df["DriverAhead"] == driver_ahead)
+            & (df["LapNumber"] == target_lap)
+        ]
+
+        if len(historical) > 0:
+            return historical.iloc[0]["Gap"]
+        return None
+
+    # Add lagged gap features
+    for lag in config.lagged_gap_laps:
+        col_name = f"Gap_L{lag}"
+        df[col_name] = df.apply(
+            lambda row: get_lagged_gap(
+                row["RaceName"], row["Driver"], row["DriverAhead"], row["LapNumber"], lag
+            ),
+            axis=1,
+        )
+        logger.info(f"Added {col_name}: {df[col_name].notna().sum()} non-null values")
+
+    # Calculate closing rate (gap change over recent laps)
+    if len(config.lagged_gap_laps) > 0:
+        max_lag = max(config.lagged_gap_laps)
+        lag_col = f"Gap_L{max_lag}"
+
+        if lag_col in df.columns:
+            # Closing rate: positive means gap is closing (getting faster relative to car ahead)
+            df["ClosingRate"] = (df[lag_col] - df["Gap"]) / max_lag
+            logger.info(f"Added ClosingRate: {df['ClosingRate'].notna().sum()} non-null values")
+
+    # Add rolling pace delta (change in relative pace over window)
+    def get_rolling_pace_delta(race_name, driver, driver_ahead, lap_num, window):
+        """Calculate change in relative pace over window."""
+        # Get relative pace from window laps ago
+        target_lap = lap_num - window
+        if target_lap < 1:
+            return None
+
+        historical = df[
+            (df["RaceName"] == race_name)
+            & (df["Driver"] == driver)
+            & (df["DriverAhead"] == driver_ahead)
+            & (df["LapNumber"] == target_lap)
+        ]
+
+        if len(historical) > 0 and "RelativePace" in historical.columns:
+            past_pace = historical.iloc[0]["RelativePace"]
+            current_pace = df[
+                (df["RaceName"] == race_name)
+                & (df["Driver"] == driver)
+                & (df["DriverAhead"] == driver_ahead)
+                & (df["LapNumber"] == lap_num)
+            ]["RelativePace"].iloc[0] if len(df[
+                (df["RaceName"] == race_name)
+                & (df["Driver"] == driver)
+                & (df["DriverAhead"] == driver_ahead)
+                & (df["LapNumber"] == lap_num)
+            ]) > 0 else None
+
+            if past_pace is not None and current_pace is not None:
+                return current_pace - past_pace
+        return None
+
+    df["RollingPaceDelta"] = df.apply(
+        lambda row: get_rolling_pace_delta(
+            row["RaceName"],
+            row["Driver"],
+            row["DriverAhead"],
+            row["LapNumber"],
+            config.closing_rate_window
+        ),
+        axis=1,
+    )
+    logger.info(f"Added RollingPaceDelta: {df['RollingPaceDelta'].notna().sum()} non-null values")
+
+    return df
+
+
 def select_features(df: pd.DataFrame) -> pd.DataFrame:
     """Select final feature set for modeling.
 
@@ -208,6 +316,14 @@ def select_features(df: pd.DataFrame) -> pd.DataFrame:
         "Position",
     ]
 
+    # Temporal features (added if enabled)
+    temporal_features = [
+        "Gap_L1",
+        "Gap_L2",
+        "ClosingRate",
+        "RollingPaceDelta",
+    ]
+
     # Categorical features (need encoding)
     categorical_features = [
         "GapBin",
@@ -223,7 +339,7 @@ def select_features(df: pd.DataFrame) -> pd.DataFrame:
     metadata = ["RaceName", "LapNumber", "Driver", "DriverAhead"]
 
     # Combine and filter to available columns
-    feature_cols = numerical_features + categorical_features
+    feature_cols = numerical_features + temporal_features + categorical_features
     available_features = [col for col in feature_cols if col in df.columns]
 
     all_cols = metadata + available_features + target

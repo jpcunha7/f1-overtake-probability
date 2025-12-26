@@ -13,7 +13,7 @@ from f1overtake.build_dataset import build_dataset
 from f1overtake.calibrate import calibrate_all_models
 from f1overtake.config import DEFAULT_CONFIG, QUICK_CONFIG
 from f1overtake.evaluate import evaluate_all_models, get_calibration_data, get_feature_importance
-from f1overtake.split import prepare_xy, split_by_race
+from f1overtake.split import split_by_race
 from f1overtake.train import load_models, save_models, train_all_models
 from f1overtake.viz import (
     create_calibration_plot,
@@ -27,14 +27,14 @@ logger = logging.getLogger(__name__)
 
 st.set_page_config(
     page_title="F1 Overtake Probability Model",
-    page_icon="🏎️",
+    page_icon="F1",
     layout="wide",
 )
 
 
 def main():
     """Main Streamlit app."""
-    st.title("🏎️ F1 Overtake Probability Model")
+    st.title("F1 Overtake Probability Model")
     st.markdown("**Predict overtaking opportunities using machine learning**")
     st.markdown("*Author: João Pedro Cunha*")
 
@@ -63,8 +63,8 @@ def main():
         st.sidebar.warning("No trained models found. Click 'Build/Load Dataset' and 'Train Models'.")
 
     # Main tabs
-    tab1, tab2, tab3, tab4 = st.tabs(
-        ["📊 Dataset & Training", "🎯 Model Evaluation", "🔮 Predictions", "ℹ️ About"]
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+        ["Dataset & Training", "Model Evaluation", "Predictions", "xO Leaderboard", "About"]
     )
 
     # Tab 1: Dataset & Training
@@ -253,8 +253,105 @@ def main():
         else:
             st.info("Please build dataset and train models first")
 
-    # Tab 4: About
+    # Tab 4: xO Leaderboard
     with tab4:
+        st.header("xO Leaderboard (Expected Overtakes)")
+
+        st.markdown("""
+        The **xO (Expected Overtakes)** metric represents the sum of predicted overtake probabilities
+        for a driver across a race. It provides an expected value for the number of overtakes a driver
+        should make given the opportunities they had.
+
+        **Note:** This metric relies on well-calibrated probability estimates.
+        """)
+
+        if "models" in st.session_state:
+            models = st.session_state["models"]
+
+            # Model selection
+            model_name = st.selectbox(
+                "Select Model for xO Calculation", list(models.keys()), key="xo_model"
+            )
+            model = models[model_name]
+
+            if "test_df" in st.session_state:
+                test_df = st.session_state["test_df"]
+
+                # Import xO functions
+                from f1overtake.xo_metric import (
+                    calculate_xo,
+                    create_xo_leaderboard,
+                    visualize_xo_analysis,
+                )
+
+                # Race selection
+                race_option = st.radio(
+                    "View", ["All Races", "Single Race"], horizontal=True
+                )
+
+                if race_option == "Single Race":
+                    available_races = test_df["RaceName"].unique()
+                    selected_race = st.selectbox("Select Race", available_races)
+                    race_filter = selected_race
+                else:
+                    race_filter = None
+
+                # Calculate xO
+                with st.spinner("Calculating xO..."):
+                    xo_df = calculate_xo(test_df, model)
+                    leaderboard = create_xo_leaderboard(xo_df, race_name=race_filter, top_n=20)
+
+                # Display leaderboard
+                st.subheader("xO Leaderboard")
+                st.dataframe(
+                    leaderboard.style.format({
+                        "xO": "{:.2f}",
+                        "xO_per_Opportunity": "{:.3f}",
+                        "Actual_per_Opportunity": "{:.3f}",
+                        "Delta": "{:.2f}",
+                    }),
+                    use_container_width=True,
+                )
+
+                # Visualization
+                st.subheader("xO Analysis")
+                viz_fig = visualize_xo_analysis(xo_df, race_name=race_filter)
+                st.plotly_chart(viz_fig, use_container_width=True)
+
+                # Download button
+                col1, col2 = st.columns(2)
+                with col1:
+                    csv = leaderboard.to_csv(index=False)
+                    st.download_button(
+                        label="Download Leaderboard CSV",
+                        data=csv,
+                        file_name=f"xo_leaderboard_{race_filter or 'all_races'}.csv",
+                        mime="text/csv",
+                    )
+
+                # Insights
+                st.subheader("Key Insights")
+                top_overperformer = leaderboard.iloc[0]
+                top_underperformer = leaderboard.iloc[-1]
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.success(f"**Top Overperformer:** {top_overperformer['Driver']}")
+                    st.write(f"Delta: +{top_overperformer['Delta']:.2f} overtakes")
+                    st.write(f"Actual: {top_overperformer['ActualOvertakes']}, Expected: {top_overperformer['xO']:.2f}")
+
+                with col2:
+                    st.error(f"**Top Underperformer:** {top_underperformer['Driver']}")
+                    st.write(f"Delta: {top_underperformer['Delta']:.2f} overtakes")
+                    st.write(f"Actual: {top_underperformer['ActualOvertakes']}, Expected: {top_underperformer['xO']:.2f}")
+
+            else:
+                st.info("Please build dataset and train models first")
+        else:
+            st.info("Please build dataset and train models first")
+
+    # Tab 5: About
+    with tab5:
         st.header("About This Model")
 
         st.markdown(
@@ -283,7 +380,7 @@ def main():
         - Calibrated versions for reliable probabilities
 
         ### Limitations
-        ⚠️ This model has several known limitations:
+        WARNING: This model has several known limitations:
         - Position changes may occur without on-track overtakes (pit strategy)
         - Label noise exists due to incomplete pit detection
         - Safety car periods may not be fully filtered

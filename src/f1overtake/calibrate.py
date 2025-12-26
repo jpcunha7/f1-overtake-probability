@@ -8,7 +8,6 @@ Calibration ensures that predicted probabilities align with actual frequencies.
 import logging
 from typing import Dict
 
-import numpy as np
 import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV
 

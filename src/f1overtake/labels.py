@@ -23,9 +23,8 @@ LIMITATIONS:
 """
 
 import logging
-from typing import Tuple
+from typing import List
 
-import numpy as np
 import pandas as pd
 
 from f1overtake.config import LabelConfig
@@ -108,6 +107,11 @@ def create_overtake_labels(
                     if _is_outlier_lap(row, race_df, config.outlier_threshold):
                         continue
 
+                # Check for safety car laps
+                if config.exclude_safety_car:
+                    if _is_safety_car_lap(race_df, lap_num, config.safety_car_threshold_pct):
+                        continue
+
                 # Calculate gap if available
                 gap = _calculate_gap(current_lap, driver, ahead_driver)
 
@@ -154,6 +158,12 @@ def _check_pit_activity(
 ) -> bool:
     """Check if driver pits within a lap window.
 
+    Improved pit detection using multiple signals:
+    - IsPitLap column if available
+    - Compound changes
+    - Large lap time spikes (pit stops add 20-30 seconds)
+    - TyreLife resets
+
     Args:
         race_df: Race DataFrame
         driver: Driver code
@@ -167,7 +177,10 @@ def _check_pit_activity(
         (race_df["Driver"] == driver)
         & (race_df["LapNumber"] >= start_lap)
         & (race_df["LapNumber"] <= start_lap + lookahead)
-    ]
+    ].sort_values("LapNumber")
+
+    if len(driver_laps) == 0:
+        return False
 
     # Check for pit stops
     if "IsPitLap" in driver_laps.columns:
@@ -179,6 +192,27 @@ def _check_pit_activity(
         compounds = driver_laps["Compound"].dropna().unique()
         if len(compounds) > 1:
             return True
+
+    # Check for TyreLife resets (drops significantly)
+    if "TyreLife" in driver_laps.columns:
+        tyre_lives = driver_laps["TyreLife"].dropna()
+        if len(tyre_lives) > 1:
+            # If tyre life decreases by more than 5 laps, likely a pit stop
+            tyre_diff = tyre_lives.diff()
+            if (tyre_diff < -5).any():
+                return True
+
+    # Check for abnormally slow laps (pit stops add 20-30 seconds)
+    if "LapTimeSeconds" in driver_laps.columns:
+        lap_times = driver_laps["LapTimeSeconds"].dropna()
+        if len(lap_times) > 0:
+            # Get median lap time for this driver in this race
+            all_driver_laps = race_df[race_df["Driver"] == driver]["LapTimeSeconds"].dropna()
+            if len(all_driver_laps) > 5:
+                median_time = all_driver_laps.median()
+                # If any lap is more than 20 seconds slower than median, likely pit stop
+                if (lap_times > median_time + 20).any():
+                    return True
 
     return False
 
@@ -239,6 +273,94 @@ def _calculate_gap(current_lap: pd.DataFrame, driver: str, ahead_driver: str) ->
 
     # Gap is difference in lap times (approximation)
     return abs(driver_time - ahead_time)
+
+
+def _is_safety_car_lap(race_df: pd.DataFrame, lap_num: int, threshold_pct: float = 0.15) -> bool:
+    """Detect if a lap is under safety car using lap time anomalies.
+
+    During safety car periods, all drivers slow down significantly.
+    We detect this by checking if most drivers have abnormally slow lap times.
+
+    Args:
+        race_df: Race DataFrame
+        lap_num: Lap number to check
+        threshold_pct: Percentage of drivers that must have slow laps
+
+    Returns:
+        True if likely safety car lap
+    """
+    lap_data = race_df[race_df["LapNumber"] == lap_num]
+
+    if len(lap_data) < 5:
+        return False
+
+    # Get lap times for this lap
+    lap_times = lap_data["LapTimeSeconds"].dropna()
+
+    if len(lap_times) < 5:
+        return False
+
+    # Get typical lap times for this race (median of all laps)
+    all_lap_times = race_df["LapTimeSeconds"].dropna()
+
+    if len(all_lap_times) < 50:
+        return False
+
+    median_time = all_lap_times.median()
+
+    # Check how many drivers are significantly slower (>10 seconds)
+    slow_count = (lap_times > median_time + 10).sum()
+    slow_pct = slow_count / len(lap_times)
+
+    # If more than threshold_pct of drivers are slow, likely safety car
+    return slow_pct > threshold_pct
+
+
+def label_sensitivity_analysis(
+    lap_data: pd.DataFrame,
+    lookahead_values: List[int] = [1, 2, 3],
+    config: LabelConfig = LabelConfig(),
+) -> pd.DataFrame:
+    """Analyze how labels change with different lookahead values.
+
+    This helps understand label sensitivity and potential noise.
+
+    Args:
+        lap_data: Full lap data
+        lookahead_values: List of lookahead values to test
+        config: Label configuration
+
+    Returns:
+        DataFrame with label statistics for each lookahead value
+    """
+    logger.info("Running label sensitivity analysis...")
+
+    results = []
+
+    for lookahead in lookahead_values:
+        config_copy = LabelConfig(
+            lookahead_laps=lookahead,
+            max_gap=config.max_gap,
+            exclude_pit_laps=config.exclude_pit_laps,
+            exclude_outliers=config.exclude_outliers,
+        )
+
+        opportunities = create_overtake_labels(lap_data, config_copy)
+
+        if len(opportunities) > 0:
+            results.append({
+                "lookahead": lookahead,
+                "total_opportunities": len(opportunities),
+                "overtakes": int(opportunities["Overtake"].sum()),
+                "overtake_rate": opportunities["Overtake"].mean(),
+            })
+
+    results_df = pd.DataFrame(results)
+
+    logger.info("Label sensitivity analysis complete:")
+    logger.info(results_df.to_string())
+
+    return results_df
 
 
 def _check_overtake(driver: str, ahead_driver: str, future_lap: pd.DataFrame) -> bool:

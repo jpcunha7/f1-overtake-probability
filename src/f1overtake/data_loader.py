@@ -10,7 +10,6 @@ from typing import Dict, List
 import fastf1
 import pandas as pd
 
-from f1overtake.config import DataConfig
 
 logger = logging.getLogger(__name__)
 
