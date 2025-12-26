@@ -1,0 +1,57 @@
+[tool.poetry]
+name = "f1overtake"
+version = "0.1.0"
+description = "F1 Overtake Probability Model: Predict overtaking opportunities using machine learning"
+authors = ["João Pedro Cunha"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "f1overtake", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastf1 = "^3.0.0"
+pandas = "^2.0.0"
+numpy = "^1.24.0"
+scikit-learn = "^1.3.0"
+xgboost = "^2.0.0"
+plotly = "^5.14.0"
+streamlit = "^1.28.0"
+pyarrow = "^12.0.0"
+pyyaml = "^6.0"
+tqdm = "^4.65.0"
+matplotlib = "^3.7.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+black = "^23.7.0"
+ruff = "^0.1.0"
+mypy = "^1.5.0"
+pandas-stubs = "^2.0.0"
+
+[tool.poetry.scripts]
+f1overtake = "f1overtake.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py310', 'py311', 'py312']
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --cov=f1overtake --cov-report=term-missing"
